@@ -14,3 +14,10 @@ resource "azuread_service_principal" "main" {
 resource "azuread_service_principal_password" "main" {
   service_principal_id = azuread_service_principal.main.object_id
 }
+
+# # Azure AD
+# resource "azurerm_role_assignment" "rolespn" {
+#   scope                       = var.aks_cluster_id
+#   role_definition_name        = "Contributor"
+#   principal_id                = azuread_service_principal.main.object_id
+# }
