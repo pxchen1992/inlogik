@@ -16,7 +16,7 @@ module "acr" {
 module "service_principal" {
   source                      = "./modules/service_principal"
   service_principal_name      = var.service_principal_name
-  # aks_cluster_id              = module.aks.aks_cluster_id
+  aks_cluster_id              = module.aks.aks_cluster_id
 }
 
 # AKS
@@ -29,9 +29,7 @@ module "aks" {
   aks_subnet_id               = module.networking.aks_subnet_id
   aks_name                    = var.aks_name
   service_principal_name      = var.service_principal_name
-  
-  depends_on                  = [module.service_principal]
-}
+  }
 
 # Vnet & Subnet 
 module "networking" {
