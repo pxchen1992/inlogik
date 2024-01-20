@@ -5,9 +5,9 @@ resource "azurerm_container_registry" "acr" {
   sku                 = "Premium"
 
   # Enable the username password
-  admin_enabled       = true
-  georeplications {
-    location                = "East US"
-    zone_redundancy_enabled = true
-  }
+  # admin_enabled       = true
+  # georeplications {
+  #   location                = "East US"
+  #   zone_redundancy_enabled = true
+  # }
 }

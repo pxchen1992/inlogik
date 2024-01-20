@@ -15,9 +15,9 @@ resource "azuread_service_principal_password" "main" {
   service_principal_id = azuread_service_principal.main.object_id
 }
 
-# Azure AD
+# Role Assignment for service principal
 resource "azurerm_role_assignment" "rolespn" {
-  scope                       = var.aks_cluster_id
-  role_definition_name        = "AKS service cluster user role"
-  principal_id                = azuread_service_principal.main.object_id
+  scope                       = azurerm_kubernetes_cluster.aks.id
+  role_definition_name        = "Contributor" #it has access to get and put keys to the key vault
+  principal_id                = azuread_service_principal.main.id
 }
