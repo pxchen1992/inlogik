@@ -48,7 +48,7 @@ jobs:
       - uses: azure/setup-kubectl@v1
       - name: Deploy to UAT
         run: |
-          sed -i 's|IMAGE_PLACEHOLDER|${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_UAT }}|g' ./uat-deployment.yaml
+          sed -i 's|IMAGE_PLACEHOLDER|${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_UAT }}|g' ./manifest/uat-deployment.yaml
           kubectl apply -f ./manifest/uat-deployment.yaml --namespace=uat
 
   deploy-to-prod:
@@ -64,7 +64,7 @@ jobs:
         id: deployment
         run: |
           IMAGE_TAG=${{ github.event.inputs.deploy_color == 'green' && env.IMAGE_TAG_GREEN || env.IMAGE_TAG_BLUE }}
-          sed -i 's|IMAGE_PLACEHOLDER|${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:$IMAGE_TAG|g' ./pro-${{ github.event.inputs.deploy_color }}-deployment.yaml
+          sed -i 's|IMAGE_PLACEHOLDER|${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:$IMAGE_TAG|g' ./manifest/pro-${{ github.event.inputs.deploy_color }}-deployment.yaml
           kubectl apply -f ./manifest/prod-${{ github.event.inputs.deploy_color }}-deployment.yaml --namespace=prod
           echo "::set-output name=deployment_url::http://my-prod-service-url" # Replace with your service URL
 
