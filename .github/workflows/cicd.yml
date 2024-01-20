@@ -1,68 +1,83 @@
-name: CI/CD Pipeline with UAT and Production
-
-env:
-  AZURE_CONTAINER_REGISTRY: "inlogik.azurecr.io"
-  IMAGE_NAME: "aspnetapp"
+name: CI/CD Pipeline with UAT and Production (Blue-Green)
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      deploy_color:
+        description: 'Deploy to which color? (green/blue)'
+        required: true
+        default: 'green'
+
+env:
+  AZURE_CONTAINER_REGISTRY: "inlogik.azurecr.io"
+  IMAGE_NAME: "aspnetapp"
+  IMAGE_TAG_UAT: "uat-${{ github.sha }}"
+  IMAGE_TAG_GREEN: "green-${{ github.sha }}"
+  IMAGE_TAG_BLUE: "blue-${{ github.sha }}" # Dynamic tag for blue
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Log in to Azure Container Registry
-        uses: azure/docker-login@v1
+      - uses: actions/checkout@v2
+      - uses: azure/docker-login@v1
         with:
           login-server: ${{ env.AZURE_CONTAINER_REGISTRY }}
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
-
-      - name: Pull, Tag and Push Docker image
+      - name: Pull and Tag Image for UAT
         run: |
           docker pull mcr.microsoft.com/dotnet/samples:aspnetapp
-          docker tag mcr.microsoft.com/dotnet/samples:aspnetapp ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          docker push ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker tag mcr.microsoft.com/dotnet/samples:aspnetapp ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_UAT }}
+          docker push ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_UAT }}
+      - name: Pull and Tag Image for Production
+        run: |
+          IMAGE_TAG=${{ github.event.inputs.deploy_color == 'green' && env.IMAGE_TAG_GREEN || env.IMAGE_TAG_BLUE }}
+          docker pull mcr.microsoft.com/dotnet/samples:aspnetapp
+          docker tag mcr.microsoft.com/dotnet/samples:aspnetapp ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:$IMAGE_TAG
+          docker push ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:$IMAGE_TAG
 
   deploy-to-uat:
     needs: build-and-push
     runs-on: ubuntu-latest
-    environment: UAT
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Set up Kubectl
-        uses: azure/setup-kubectl@v1
-      - name: Update Kubernetes Manifest for UAT
-        run: |
-          sed -i 's|IMAGE_PLACEHOLDER|${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}|g' ./uat-deployment.yaml
+      - uses: actions/checkout@v2
+      - uses: azure/setup-kubectl@v1
       - name: Deploy to UAT
         run: |
-          kubectl apply -f ./uat-deployment.yaml --namespace=uat
-
-  uat-approval:
-    needs: deploy-to-uat
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - run: echo "UAT Deployment complete. Awaiting approval for Production deployment."
+          sed -i 's|IMAGE_PLACEHOLDER|${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_UAT }}|g' ./uat-deployment.yaml
+          kubectl apply -f ./manifest/uat-deployment.yaml --namespace=uat
 
   deploy-to-prod:
-    needs: uat-approval
+    needs: deploy-to-uat
+    runs-on: ubuntu-latest
+    environment: 
+      name: production
+      url: ${{ steps.deployment.outputs.deployment_url }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: azure/setup-kubectl@v1
+      - name: Deploy to Selected Color (Prod)
+        id: deployment
+        run: |
+          IMAGE_TAG=${{ github.event.inputs.deploy_color == 'green' && env.IMAGE_TAG_GREEN || env.IMAGE_TAG_BLUE }}
+          sed -i 's|IMAGE_PLACEHOLDER|${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:$IMAGE_TAG|g' ./pro-${{ github.event.inputs.deploy_color }}-deployment.yaml
+          kubectl apply -f ./manifest/prod-${{ github.event.inputs.deploy_color }}-deployment.yaml --namespace=prod
+          echo "::set-output name=deployment_url::http://my-prod-service-url" # Replace with your service URL
+
+  switch-to-color:
+    needs: deploy-to-prod
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Set up Kubectl
-        uses: azure/setup-kubectl@v1
-      - name: Update Kubernetes Manifest for Production
+      - uses: actions/checkout@v2
+      - uses: azure/setup-kubectl@v1
+      - name: Switch Traffic to Selected Color (Prod)
         run: |
-          sed -i 's|IMAGE_PLACEHOLDER|${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}|g' ./prod-deployment.yaml
-      - name: Deploy to Production
-        run: |
-          kubectl apply -f ./prod-deployment.yaml --namespace=prod
+          if [ "${{ github.event.inputs.deploy_color }}" == "green" ]; then
+            kubectl patch service aspnetapp-service -n prod --type='json' -p='[{"op": "replace", "path": "/spec/selector/color", "value":"green"}]'
+          else
+            kubectl patch service aspnetapp-service -n prod --type='json' -p='[{"op": "replace", "path": "/spec/selector/color", "value":"blue"}]'
+          fi

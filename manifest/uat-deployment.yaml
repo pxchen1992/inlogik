@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aspnetapp-uat
+  namespace: uat
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: aspnetapp-uat
+  template:
+    metadata:
+      labels:
+        app: aspnetapp-uat
+    spec:
+      containers:
+        - name: aspnetapp
+          image: inlogik.azurecr.io/aspnetapp:latest # Updated to use ACR image
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aspnetapp-uat-service
+  namespace: uat
+spec:
+  type: ClusterIP
+  selector:
+    app: aspnetapp-uat
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+# ---
+# apiVersion: autoscaling/v2beta2
+# kind: HorizontalPodAutoscaler
+# metadata:
+#   name: aspnetapp-uat-hpa
+#   namespace: uat
+# spec:
+#   scaleTargetRef:
+#     apiVersion: apps/v1
+#     kind: Deployment
+#     name: aspnetapp-uat
+#   minReplicas: 1
+#   maxReplicas: 5
+#   metrics:
+#     - type: Resource
+#       resource:
+#         name: cpu
+#         target:
+#           type: Utilization
+#           averageUtilization: 50
