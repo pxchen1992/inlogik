@@ -59,6 +59,8 @@ spec:
         - name: storage
           persistentVolumeClaim:
             claimName: aspnetapp-pvc-green
+      imagePullSecrets:
+        - name: acr-secret
 
 ---
 apiVersion: autoscaling/v2beta2

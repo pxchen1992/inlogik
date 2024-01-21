@@ -72,6 +72,17 @@ jobs:
           admin: "false"
           use-kubelogin: "true"
 
+      - name: Create ACR Access Secret in Kubernetes
+        run: |
+          kubectl create secret docker-registry acr-secret \
+          --docker-server=${{ env.AZURE_CONTAINER_REGISTRY }} \
+          --docker-username=${{ secrets.ACR_USERNAME }} \
+          --docker-password=${{ secrets.ACR_PASSWORD }} \
+          --namespace=uat
+        env:
+          ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+          ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+
       - name: Update Kubernetes Manifest for UAT
         run: |
           sed -i 's|IMAGE_PLACEHOLDER|${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_UAT }}|g' ./manifest/uat-deployment.yaml
@@ -110,6 +121,17 @@ jobs:
           cluster-name: ${{ env.CLUSTER_NAME }}
           admin: "false"
           use-kubelogin: "true"
+
+      - name: Create ACR Access Secret in Kubernetes
+        run: |
+          kubectl create secret docker-registry acr-secret \
+          --docker-server=${{ env.AZURE_CONTAINER_REGISTRY }} \
+          --docker-username=${{ secrets.ACR_USERNAME }} \
+          --docker-password=${{ secrets.ACR_PASSWORD }} \
+          --namespace=prod
+        env:
+          ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+          ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
 
       - name: Update Kubernetes Manifest for Prod
         run: |
