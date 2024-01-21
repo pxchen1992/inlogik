@@ -41,7 +41,8 @@ jobs:
           docker pull mcr.microsoft.com/dotnet/samples:aspnetapp
           docker tag mcr.microsoft.com/dotnet/samples:aspnetapp ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:$IMAGE_TAG
           docker push ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:$IMAGE_TAG
-
+  
+  # UAT
   deploy-to-uat:
     needs: build-and-push
     runs-on: ubuntu-latest
@@ -72,13 +73,17 @@ jobs:
           admin: "false"
           use-kubelogin: "true"
 
-      - name: Create ACR Access Secret in Kubernetes
+      - name: Create ACR Access Secret in Kubernetes if Not Exits
         run: |
-          kubectl create secret docker-registry acr-secret \
-          --docker-server=${{ env.AZURE_CONTAINER_REGISTRY }} \
-          --docker-username=${{ secrets.ACR_USERNAME }} \
-          --docker-password=${{ secrets.ACR_PASSWORD }} \
-          --namespace=uat
+          if ! kubectl get secret acr-secret --namespace uat; then
+            kubectl create secret docker-registry acr-secret \
+            --docker-server=${{ env.AZURE_CONTAINER_REGISTRY }} \
+            --docker-username=${{ secrets.ACR_USERNAME }} \
+            --docker-password=${{ secrets.ACR_PASSWORD }} \
+            --namespace=uat
+          else
+            echo "Secret 'acr-secret' already exists in 'uat' namespace"
+          fi
         env:
           ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
           ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
@@ -94,7 +99,7 @@ jobs:
           action: deploy
           manifests: |
             ./manifest/uat-deployment.yaml
-
+  # PROD
   deploy-to-prod:
     needs: deploy-to-uat
     runs-on: ubuntu-latest
@@ -122,13 +127,17 @@ jobs:
           admin: "false"
           use-kubelogin: "true"
 
-      - name: Create ACR Access Secret in Kubernetes
+      - name: Create ACR Access Secret in Kubernetes if Not Exists
         run: |
-          kubectl create secret docker-registry acr-secret \
-          --docker-server=${{ env.AZURE_CONTAINER_REGISTRY }} \
-          --docker-username=${{ secrets.ACR_USERNAME }} \
-          --docker-password=${{ secrets.ACR_PASSWORD }} \
-          --namespace=prod
+          if ! kubectl get secret acr-secret --namespace prod; then
+            kubectl create secret docker-registry acr-secret \
+            --docker-server=${{ env.AZURE_CONTAINER_REGISTRY }} \
+            --docker-username=${{ secrets.ACR_USERNAME }} \
+            --docker-password=${{ secrets.ACR_PASSWORD }} \
+            --namespace=prod
+          else
+            echo "Secret 'acr-secret' already exists in 'prod' namespace"
+          fi
         env:
           ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
           ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
