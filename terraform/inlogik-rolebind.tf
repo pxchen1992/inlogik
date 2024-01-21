@@ -29,7 +29,7 @@ resource "kubernetes_cluster_role_binding" "full_access_binding" {
   }
 }
 
-resource "kubernetes_role_binding" "namespace_full_access" {
+resource "kubernetes_role_binding" "uat_full_access" {
   metadata {
     name      = "namespace-full-access-binding"
     namespace = "uat" 
@@ -46,7 +46,7 @@ resource "kubernetes_role_binding" "namespace_full_access" {
   }
 }
 
-resource "kubernetes_role_binding" "namespace_full_access" {
+resource "kubernetes_role_binding" "prod_full_access" {
   metadata {
     name      = "namespace-full-access-binding"
     namespace = "prod" 
