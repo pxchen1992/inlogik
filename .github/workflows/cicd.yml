@@ -14,6 +14,8 @@ on:
 env:
   AZURE_CONTAINER_REGISTRY: "inlogik.azurecr.io"
   IMAGE_NAME: "aspnetapp"
+  CLUSTER_NAME: "chen-aks"
+  RESOURCE_GROUP: "inlogik"
   IMAGE_TAG_UAT: "uat-${{ github.sha }}"
   IMAGE_TAG_GREEN: "green-${{ github.sha }}"
   IMAGE_TAG_BLUE: "blue-${{ github.sha }}" # Dynamic tag for blue
@@ -47,10 +49,22 @@ jobs:
       IMAGE_TAG_UAT: ${{github.sha}} # Setting the tag to the commit SHA
     steps:
       - uses: actions/checkout@v2
-      - uses: azure/setup-kubectl@v1
+      - name: Azure Login
+        uses: azure/login@v1
+        with: 
+          creds: ${{secrets.AZURE_CREDENTIALS}}
+
+      - name: Install Kubectl
+        uses: azure/setup-kubectl@v1
+      
+      - name: Get AKS credentials
+        run: |
+          az aks get-credentials --name ${{env.CLUSTER_NAME}} --resource-group ${{env.RESOURCE_GROUP}} --overwrite-existing
+
       - name: Update Kubernetes Manifest for UAT
         run: |
           sed -i 's|IMAGE_PLACEHOLDER|${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_UAT }}|g' ./manifest/uat-deployment.yaml
+          
       - name: Deploy to UAT
         run: |
           kubectl apply -f ./manifest/uat-deployment.yaml --namespace=uat
