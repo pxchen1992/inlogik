@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: aspnetapp
-          image: inlogik.azurecr.io/aspnetapp:latest # Updated to use ACR image
+          image: IMAGE_PLACEHOLDER # The "sed" command will replace "IMAGE_PLACEHOLDER" with the actual image path and tag
           ports:
             - containerPort: 80
           resources:
