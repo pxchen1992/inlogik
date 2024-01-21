@@ -54,7 +54,7 @@ jobs:
         with: 
           creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
      
-    # Use kubelogin to configure your kubeconfig for Azure auth
+      # Use kubelogin to configure your kubeconfig for Azure auth
       - name: Set up kubelogin for non-interactive login
         uses: azure/use-kubelogin@v1
         with:
@@ -63,9 +63,14 @@ jobs:
       - name: Install Kubectl
         uses: azure/setup-kubectl@v1
       
-      - name: Get AKS credentials
-        run: |
-          az aks get-credentials --name ${{env.CLUSTER_NAME}} --resource-group ${{env.RESOURCE_GROUP}} --overwrite-existing
+      # Retrieves your Azure Kubernetes Service cluster's kubeconfig file
+      - name: Get AKS context
+        uses: azure/aks-set-context@v3
+        with: 
+          resource-group: ${{ env.RESOURCE_GROUP }}
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          admin: "false"
+          use-kubelogin: "true"
 
       - name: Update Kubernetes Manifest for UAT
         run: |
@@ -73,7 +78,7 @@ jobs:
 
       - name: Deploy to UAT
         run: |
-          kubectl apply -f ./manifest/uat-deployment.yaml --namespace=uat
+          kubectl apply -f ./manifest/uat-deployment.yaml --namespace=uat --validate-false
 
   deploy-to-prod:
     needs: deploy-to-uat
