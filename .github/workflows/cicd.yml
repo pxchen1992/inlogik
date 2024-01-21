@@ -77,8 +77,12 @@ jobs:
           sed -i 's|IMAGE_PLACEHOLDER|${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_UAT }}|g' ./manifest/uat-deployment.yaml
 
       - name: Deploy to UAT
-        run: |
-          kubectl apply -f ./manifest/uat-deployment.yaml --namespace=uat --validate=false
+        uses: Azure/k8s-deploy@v4
+        with:
+          namespace: uat
+          action: deploy
+          manifests: |
+            ./manifest/uat-deployment.yaml
 
   deploy-to-prod:
     needs: deploy-to-uat
@@ -107,12 +111,18 @@ jobs:
           admin: "false"
           use-kubelogin: "true"
 
-      - name: Deploy to Selected Color (Prod)
-        id: deployment
+      - name: Update Kubernetes Manifest for Prod
         run: |
           IMAGE_TAG=${{ github.event.inputs.deploy_color == 'green' && env.IMAGE_TAG_GREEN || env.IMAGE_TAG_BLUE }}
           sed -i 's|IMAGE_PLACEHOLDER|${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:$IMAGE_TAG|g' ./manifest/pro-${{ github.event.inputs.deploy_color }}-deployment.yaml
-          kubectl apply -f ./manifest/prod-${{ github.event.inputs.deploy_color }}-deployment.yaml --namespace=prod
+
+      - name: Deploy to Selected Color (Prod)
+        uses: Azure/k8s-deploy@v4
+        with:
+          namespace: prod
+          action: deploy
+          manifests: |
+            ./manifest/prod-${{ github.event.inputs.deploy_color }}-deployment.yaml
 
   switch-to-color:
     needs: deploy-to-prod
