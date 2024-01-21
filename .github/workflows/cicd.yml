@@ -78,7 +78,7 @@ jobs:
 
       - name: Deploy to UAT
         run: |
-          kubectl apply -f ./manifest/uat-deployment.yaml --namespace=uat --validate-false
+          kubectl apply -f ./manifest/uat-deployment.yaml --namespace=uat --validate=false
 
   deploy-to-prod:
     needs: deploy-to-uat
