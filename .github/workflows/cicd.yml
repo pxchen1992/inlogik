@@ -155,6 +155,8 @@ jobs:
           sed -i "s|IMAGE_PLACEHOLDER|$DEPLOY_COLOR/${{ env.IMAGE_NAME }}:$IMAGE_TAG|g" ./manifest/prod-$DEPLOY_COLOR-deployment.yaml
     
       - name: Deploy to Selected Color (Prod)
+        env:
+          DEPLOY_COLOR: ${{ github.event.inputs.deploy_color != '' && github.event.inputs.deploy_color || 'green' }}
         uses: Azure/k8s-deploy@v4
         with:
           namespace: prod
