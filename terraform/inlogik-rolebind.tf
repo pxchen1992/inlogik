@@ -46,3 +46,19 @@ resource "kubernetes_role_binding" "namespace_full_access" {
   }
 }
 
+resource "kubernetes_role_binding" "namespace_full_access" {
+  metadata {
+    name      = "namespace-full-access-binding"
+    namespace = "prod" 
+  }
+  subject {
+    kind      = "User"
+    name      = "e97e4a7b-45e0-492a-a99d-6d366a33ea97"
+    api_group = "rbac.authorization.k8s.io"
+  }
+  role_ref {
+    kind      = "ClusterRole"
+    name      = "admin"  
+    api_group = "rbac.authorization.k8s.io"
+  }
+}
