@@ -62,3 +62,8 @@ variable "gateway_name" {
   type = string
   default = "inlogik-gateway"
 }
+
+variable "subscriptionId" {}
+variable "spSecret" {}
+variable "tenantId" {}
+variable "clientId" {}
