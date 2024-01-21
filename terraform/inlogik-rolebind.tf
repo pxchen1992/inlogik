@@ -29,20 +29,20 @@ resource "kubernetes_cluster_role_binding" "full_access_binding" {
   }
 }
 
-resource "kubernetes_cluster_role_binding" "github_actions_binding" {
+resource "kubernetes_role_binding" "namespace_full_access" {
   metadata {
-    name = "github-actions-binding"
+    name      = "namespace-full-access-binding"
+    namespace = "uat" 
   }
-
   subject {
     kind      = "User"
-    name      = "d16fac45-927f-4222-bb0a-58b9871c340b" # actual Service Principal Client ID
+    name      = "e97e4a7b-45e0-492a-a99d-6d366a33ea97"
     api_group = "rbac.authorization.k8s.io"
   }
-
   role_ref {
     kind      = "ClusterRole"
-    name      = kubernetes_cluster_role.full_access.metadata[0].name
+    name      = "admin"  
     api_group = "rbac.authorization.k8s.io"
   }
 }
+
