@@ -144,17 +144,23 @@ jobs:
           ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
 
       - name: Update Kubernetes Manifest for Prod
+        env:
+          DEPLOY_COLOR: ${{ github.event.inputs.deploy_color != '' && github.event.inputs.deploy_color || 'green' }}
         run: |
-          IMAGE_TAG=${{ github.event.inputs.deploy_color == 'green' && env.IMAGE_TAG_GREEN || env.IMAGE_TAG_BLUE }}
-          sed -i 's|IMAGE_PLACEHOLDER|${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:$IMAGE_TAG|g' ./manifest/pro-${{ github.event.inputs.deploy_color }}-deployment.yaml
-
+          if [ "$DEPLOY_COLOR" == "green" ]; then
+            IMAGE_TAG="${{ env.IMAGE_TAG_GREEN }}"
+          else
+            IMAGE_TAG="${{ env.IMAGE_TAG_BLUE }}"
+          fi
+          sed -i "s|IMAGE_PLACEHOLDER|$DEPLOY_COLOR/${{ env.IMAGE_NAME }}:$IMAGE_TAG|g" ./manifest/prod-$DEPLOY_COLOR-deployment.yaml
+    
       - name: Deploy to Selected Color (Prod)
         uses: Azure/k8s-deploy@v4
         with:
           namespace: prod
           action: deploy
           manifests: |
-            ./manifest/prod-${{ github.event.inputs.deploy_color }}-deployment.yaml
+            ./manifest/prod-${{ env.DEPLOY_COLOR }}-deployment.yaml
 
   switch-to-color:
     needs: deploy-to-prod
@@ -163,8 +169,10 @@ jobs:
       - uses: actions/checkout@v2
       - uses: azure/setup-kubectl@v1
       - name: Switch Traffic to Selected Color (Prod)
+        env:
+          DEPLOY_COLOR: ${{ github.event.inputs.deploy_color != '' && github.event.inputs.deploy_color || 'green' }}
         run: |
-          if [ "${{ github.event.inputs.deploy_color }}" == "green" ]; then
+          if [ "$DEPLOY_COLOR" == "green" ]; then
             kubectl patch service aspnetapp-service -n prod --type='json' -p='[{"op": "replace", "path": "/spec/selector/color", "value":"green"}]'
           else
             kubectl patch service aspnetapp-service -n prod --type='json' -p='[{"op": "replace", "path": "/spec/selector/color", "value":"blue"}]'
