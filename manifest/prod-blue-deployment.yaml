@@ -28,7 +28,7 @@ spec:
     spec:
       containers:
         - name: aspnetapp
-          image: inlogik.azurecr.io/aspnetapp:blue-latest
+          image: IMAGE_PLACEHOLDER
           ports:
             - containerPort: 80
           resources:

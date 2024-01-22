@@ -152,7 +152,8 @@ jobs:
       - name: Update Kubernetes Manifest for Prod
         run: |
           IMAGE_TAG=${{ github.event.inputs.deploy_color == 'green' && env.IMAGE_TAG_GREEN || env.IMAGE_TAG_BLUE }}
-          sed -i "s|IMAGE_PLACEHOLDER|${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:$IMAGE_TAG|g" ./manifest/prod-${{ github.event.inputs.deploy_color }}-deployment.yaml
+          FILENAME="./manifest/prod-${{ github.event.inputs.deploy_color }}-deployment.yaml"
+          sed -i "s|IMAGE_PLACEHOLDER|${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:$IMAGE_TAG|g" $FILENAME
           
     
       - name: Deploy to Selected Color (Prod)
