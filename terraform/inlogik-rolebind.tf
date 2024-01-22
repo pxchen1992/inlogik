@@ -18,7 +18,7 @@ resource "kubernetes_cluster_role_binding" "full_access_binding" {
 
   subject {
     kind      = "User"
-    name      = "pengxiang.chen@nexushub.onmicrosoft.com"
+    name      = "fb510d71-0114-47a9-a9e4-f48a44ee0348" # Object ID
     api_group = "rbac.authorization.k8s.io"
   }
 
