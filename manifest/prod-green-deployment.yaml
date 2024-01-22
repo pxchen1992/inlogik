@@ -63,7 +63,7 @@ spec:
         - name: acr-secret
 
 ---
-apiVersion: autoscaling/v1
+apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
   name: aspnetapp-green-hpa
