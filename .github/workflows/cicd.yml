@@ -149,6 +149,10 @@ jobs:
         env:
           ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
           ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+          
+      - name: Apply prod service 
+        run: |
+          kubectl apply -f ./manifest/prod-service.yaml -n prod
 
       - name: Update Kubernetes Manifest for Prod
         run: |
