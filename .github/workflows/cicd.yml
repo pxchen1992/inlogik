@@ -8,8 +8,8 @@ on:
     inputs:
       deploy_color:
         description: 'Deploy to which color in production? (green/blue)'
-        required: false
-        default: 'green'
+        required: true
+        
 
 env:
   AZURE_CONTAINER_REGISTRY: "inlogik.azurecr.io"
@@ -108,7 +108,6 @@ jobs:
   # PROD
   deploy-to-prod:
     needs: deploy-to-uat
-    if: ${{ github.event.inputs.deploy_color }}
     runs-on: ubuntu-latest
     environment: 
       name: production
