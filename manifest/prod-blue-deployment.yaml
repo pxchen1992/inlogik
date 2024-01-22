@@ -30,7 +30,7 @@ spec:
         - name: aspnetapp
           image: IMAGE_PLACEHOLDER
           ports:
-            - containerPort: 80
+            - containerPort: 8080
           resources:
             requests:
               cpu: "100m"
@@ -45,14 +45,14 @@ spec:
           livenessProbe:
             httpGet:
               path: /healthz
-              port: 80
+              port: 8080
             initialDelaySeconds: 15
             periodSeconds: 20
 
           readinessProbe:
             httpGet:
               path: /ready
-              port: 80
+              port: 8080
             initialDelaySeconds: 5
             periodSeconds: 10
       volumes:
