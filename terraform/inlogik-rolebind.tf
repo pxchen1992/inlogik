@@ -36,7 +36,7 @@ resource "kubernetes_role_binding" "uat_full_access" {
   }
   subject {
     kind      = "User"
-    name      = "9320f04e-f7c0-4cba-91a5-27286b8b2371"
+    name      = "02fc7d78-a18e-437b-b68c-af14119b8eeb"
     api_group = "rbac.authorization.k8s.io"
   }
   role_ref {
@@ -53,7 +53,7 @@ resource "kubernetes_role_binding" "prod_full_access" {
   }
   subject {
     kind      = "User"
-    name      = "9320f04e-f7c0-4cba-91a5-27286b8b2371"
+    name      = "02fc7d78-a18e-437b-b68c-af14119b8eeb"
     api_group = "rbac.authorization.k8s.io"
   }
   role_ref {

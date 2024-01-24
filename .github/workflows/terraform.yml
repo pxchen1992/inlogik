@@ -37,6 +37,7 @@ jobs:
 
       - name: Terraform Plan
         run: terraform plan
+        working-directory: /.terraform
 
       # Optional: Apply only on push to main
       - name: Terraform Apply
