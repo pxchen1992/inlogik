@@ -63,6 +63,11 @@ variable "gateway_name" {
   default = "inlogik-gateway"
 }
 
+variable "admin_group_object_ids" {
+  type = list
+  description = "AKS admin groups ids"
+}
+
 variable "subscriptionId" {}
 variable "spSecret" {}
 variable "tenantId" {}

@@ -24,3 +24,8 @@ output "client_secret" {
   value       = azuread_service_principal_password.main.value
   sensitive = true
 }
+
+# Output the grafana url for usability
+output "grafana_url" {
+  value = azurerm_dashboard_grafana.default.endpoint
+}

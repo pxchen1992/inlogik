@@ -22,6 +22,11 @@ terraform {
       source  = "gavinbunney/kubectl"
       version = ">= 1.14.0"
     }
+    azapi = {
+      source = "Azure/azapi"
+      version = "1.0.0"
+    }
+    
   }
 }
 
@@ -60,4 +65,9 @@ provider "azurerm" {
       recover_soft_deleted_key_vaults = false
     }
   }
+  skip_provider_registration = true
+}
+
+provider "azapi" {
+
 }

@@ -24,7 +24,8 @@ spec:
   template:
     metadata:
       labels:
-        app: aspnetapp-green
+        app: aspnetapp
+        color: green
     spec:
       containers:
         - name: aspnetapp
