@@ -20,7 +20,8 @@ spec:
   replicas: 3
   selector:
     matchLabels:
-      app: aspnetapp-blue
+      app: aspnetapp
+      color: blue
   template:
     metadata:
       labels:

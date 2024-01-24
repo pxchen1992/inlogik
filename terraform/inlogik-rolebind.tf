@@ -42,7 +42,7 @@ resource "kubernetes_role_binding" "uat_full_access" {
   }
   role_ref {
     kind      = "ClusterRole"
-    name      = "admin"  
+    name      = "full-access"  
     api_group = "rbac.authorization.k8s.io"
   }
 }
@@ -60,7 +60,7 @@ resource "kubernetes_role_binding" "prod_full_access" {
   }
   role_ref {
     kind      = "ClusterRole"
-    name      = "admin"  
+    name      = "full-access"  
     api_group = "rbac.authorization.k8s.io"
   }
 }
