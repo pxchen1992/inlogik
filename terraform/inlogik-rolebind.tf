@@ -18,7 +18,7 @@ resource "kubernetes_cluster_role_binding" "full_access_binding" {
 
   subject {
     kind      = "User"
-    name      = "fb510d71-0114-47a9-a9e4-f48a44ee0348" # Object ID
+    name      = "190f2af4-5cf0-4b15-802e-d9594c4554f6" # Object ID
     api_group = "rbac.authorization.k8s.io"
   }
 
@@ -29,6 +29,7 @@ resource "kubernetes_cluster_role_binding" "full_access_binding" {
   }
 }
 
+# uat env.
 resource "kubernetes_role_binding" "uat_full_access" {
   metadata {
     name      = "namespace-full-access-binding"
@@ -46,6 +47,7 @@ resource "kubernetes_role_binding" "uat_full_access" {
   }
 }
 
+# prod env.
 resource "kubernetes_role_binding" "prod_full_access" {
   metadata {
     name      = "namespace-full-access-binding"
